@@ -1,14 +1,16 @@
 import './style.css';
 import { createContext } from './gl/context';
+import { applyI18n, initI18n, onLang, t } from './i18n';
 import { ANT_CAPACITY, ANT_TEX, defaultParams, WORLD_H, WORLD_W, type Tool } from './params';
 import { Camera } from './render/Camera';
+import { exposePalette, paletteFor } from './render/palette';
 import { Renderer } from './render/Renderer';
 import { AntSystem } from './sim/AntSystem';
 import { Colony, NO_SPAWN } from './sim/Colony';
 import { PheromoneField } from './sim/PheromoneField';
 import { Stats } from './sim/Stats';
 import { World, type Stroke } from './sim/World';
-import { createGui } from './ui/gui';
+import { createPanel } from './ui/panel';
 import { Hud } from './ui/hud';
 import { Input } from './ui/input';
 import { clamp } from './util';
@@ -18,11 +20,41 @@ const STATS_EVERY = 6;
 
 function showError(message: string): void {
   const el = document.getElementById('error')!;
-  el.textContent = message;
+  const title = document.createElement('h2');
+  title.dataset.i18n = 'err.h';
+  const detail = document.createElement('p');
+  detail.textContent = message;
+  const hint = document.createElement('p');
+  hint.className = 'muted';
+  hint.dataset.i18n = 'err.hint';
+  el.replaceChildren(title, detail, hint);
   el.hidden = false;
+  applyI18n();
 }
 
-function boot(): void {
+/** Botón de tema (auto -> claro -> oscuro) y paleta del canvas, que no hereda los tokens CSS. */
+function initTheme(): { palette: () => ReturnType<typeof paletteFor> } {
+  const root = document.documentElement;
+  const theme = window.Theme;
+  const button = document.getElementById('theme-btn') as HTMLButtonElement;
+  let palette = paletteFor(false);
+  const sync = () => {
+    palette = paletteFor(!!theme && theme.isDark());
+    exposePalette(palette, root);
+    if (theme) button.textContent = t(`theme.${theme.mode()}`);
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg').trim();
+  };
+  if (theme) {
+    button.addEventListener('click', () => theme.cycle());
+    theme.onChange(sync);
+  } else button.hidden = true;
+  onLang(sync);
+  sync();
+  return { palette: () => palette };
+}
+
+function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
   const canvas = document.getElementById('view') as HTMLCanvasElement;
   const gl = createContext(canvas);
   // Todos los draws generan sus vértices con gl_VertexID/gl_InstanceID: basta un VAO vacío.
@@ -71,7 +103,8 @@ function boot(): void {
     onStep: actions.step,
     onFit: actions.fit,
   });
-  createGui(params, actions);
+  const panel = createPanel(document.getElementById('panel')!, params, actions);
+  applyI18n();
 
   let fitted = false;
   function resize(): void {
@@ -115,7 +148,8 @@ function boot(): void {
     ticksPerSecond += (steps / dt - ticksPerSecond) * 0.05;
     if (steps > 0 && frameCount % STATS_EVERY === 0) captureStats();
 
-    renderer.draw(world, pheromones, ants, camera, params, input.hover);
+    renderer.draw(world, pheromones, ants, camera, params, input.hover, theme.palette());
+    panel.update();
     hud.update(now, fps, ticksPerSecond, tick, colony, params);
     requestAnimationFrame(frame);
   }
@@ -272,8 +306,10 @@ function boot(): void {
   }
 }
 
+const theme = initTheme();
+initI18n();
 try {
-  boot();
+  boot(theme);
 } catch (err) {
   console.error(err);
   showError(err instanceof Error ? err.message : String(err));

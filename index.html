@@ -2,17 +2,75 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Anter · taridepaco</title>
+    <meta
+      name="description"
+      content="Simulador de colonia de hormigas en la GPU: feromonas, rastros y caminos que se acortan solos."
+    />
+    <meta property="og:title" content="Anter" />
+    <meta
+      property="og:description"
+      content="Simulador de colonia de hormigas en la GPU: feromonas, rastros y caminos que se acortan solos."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#bfe3d6" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // idioma antes del primer pintado: ?lang=, luego la última elección, luego el navegador
+      (function () {
+        var l = null;
+        try {
+          var q = new URLSearchParams(location.search).get('lang'),
+            s = null;
+          try {
+            s = localStorage.getItem('taridepaco-lang');
+          } catch (e) {
+            /* sin almacenamiento */
+          }
+          var n = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+          l = q || s || (/^es/i.test(n) ? 'es' : 'en');
+        } catch (e) {
+          /* navegador antiguo */
+        }
+        document.documentElement.lang = l === 'en' ? 'en' : 'es';
+      })();
+    </script>
+    <script src="/js/theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Martian+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="/css/system.css" />
   </head>
   <body>
-    <canvas id="view"></canvas>
-    <div id="hud"></div>
-    <div id="help">
-      Clic izq.: pintar · Clic der.: mover cámara · Rueda: zoom ·
-      1 comida · 2 muro · 3 peligro · 4 borrar · 5 nido · Espacio: pausa · . paso · F encuadrar
+    <div class="app">
+      <header class="topbar">
+        <a class="util back" href="https://taridepaco.github.io/">← taridepaco</a>
+        <div class="brand">
+          <h1>Anter</h1>
+          <span class="tag" data-i18n="kind">Simulador</span>
+        </div>
+        <button class="chip" type="button" id="theme-btn">Tema: auto</button>
+        <div class="lang-switch" role="group" aria-label="Language / Idioma">
+          <button type="button" data-lang="es" lang="es" aria-label="Español" aria-pressed="true">ES</button>
+          <button type="button" data-lang="en" lang="en" aria-label="English" aria-pressed="false">EN</button>
+        </div>
+      </header>
+
+      <main class="stage">
+        <section class="console" data-i18n-aria="aria.sim" aria-label="Simulación">
+          <div class="screen">
+            <canvas id="view"></canvas>
+            <div id="error" role="alert" hidden></div>
+          </div>
+          <div class="hud" id="hud"></div>
+        </section>
+        <aside class="panel" id="panel" data-i18n-aria="aria.panel" aria-label="Parámetros"></aside>
+      </main>
     </div>
-    <div id="error" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

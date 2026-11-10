@@ -21,10 +21,10 @@ const vec2 CORNERS[6] = vec2[6](
   vec2(-1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0)
 );
 
-const vec3 SEARCH_COLOR = vec3(0.92, 0.88, 0.8);
-const vec3 HUNGRY_COLOR = vec3(1.0, 0.55, 0.15);
-const vec3 GIVE_UP_COLOR = vec3(0.55, 0.65, 0.85);
-const vec3 DANGER_COLOR = vec3(1.0, 0.15, 0.1);
+uniform vec3 u_ant;
+uniform vec3 u_antHungry;
+uniform vec3 u_antGiveUp;
+uniform vec3 u_antScared;
 
 void main() {
   ivec2 tc = ivec2(gl_InstanceID % ANT_TEX, gl_InstanceID / ANT_TEX);
@@ -45,8 +45,8 @@ void main() {
               + dir * corner.x * lengthPx * 0.5 + side * corner.y * widthPx * 0.5;
   gl_Position = vec4(screen.x / u_canvas.x * 2.0 - 1.0, 1.0 - screen.y / u_canvas.y * 2.0, 0.0, 1.0);
 
-  vec3 color = mode == 2 ? HUNGRY_COLOR : mode == 3 ? GIVE_UP_COLOR : SEARCH_COLOR;
-  v_color = mix(color, DANGER_COLOR, s1.y);
+  vec3 color = mode == 2 ? u_antHungry : mode == 3 ? u_antGiveUp : u_ant;
+  v_color = mix(color, u_antScared, s1.y);
   v_local = corner;
   v_carrying = mode == 1 ? 1.0 : 0.0;
   v_shaped = lengthPx > 5.0 ? 1.0 : 0.0;
