@@ -1,0 +1,54 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0b0c;
+  color: #e8e4dc;
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+#view {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+#hud,
+#help {
+  position: fixed;
+  left: 10px;
+  padding: 6px 9px;
+  background: rgba(10, 10, 12, 0.72);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre;
+}
+
+#hud {
+  top: 10px;
+}
+
+#help {
+  bottom: 10px;
+  white-space: normal;
+  max-width: calc(100vw - 40px);
+  opacity: 0.8;
+}
+
+#error {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  font-size: 15px;
+  text-align: center;
+  background: #0b0b0c;
+}
+
+#error[hidden] {
+  display: none;
+}
