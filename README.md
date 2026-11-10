@@ -2,6 +2,8 @@
 
 Simulador de colonia de hormigas en WebGL2. Toda la simulación por hormiga corre en la GPU (hasta 65.536 a la vez). Los caminos a la comida emergen de tres feromonas: **home** (rastro al nido), **food** (rastro a la comida) y **alarm**. Queda un cuarto canal libre para otra hormona.
 
+**Pruébalo:** https://taridepaco.github.io/anter/ (navegador de escritorio).
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
