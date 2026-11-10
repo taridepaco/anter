@@ -1,7 +1,11 @@
-name: Deploy to GitHub Pages
+# Publishes dist/ to GitHub Pages. Knows nothing about the project: it runs deploy/test.sh (if
+# there is one) and deploy/build.sh, the same build the home server uses.
+#   pull request:            test and build, without publishing
+#   push to main, or by hand: test, build and publish
+# Settings → Pages → Build and deployment → Source: GitHub Actions.
+# Common to every taridepaco site, copied from taridepaco.github.io: do not edit it here.
+name: Pages
 
-# En cada push a main: tests, build y publicación en GitHub Pages.
-# En las PR solo se comprueba que los tests pasan y que compila.
 on:
   push:
     branches: [main]
@@ -13,7 +17,7 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  # Nunca cortar un despliegue a medias; en las PR sí se cancela la ejecución anterior.
+  # never stop a deployment halfway; in pull requests, a new push cancels the previous run
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -23,13 +27,17 @@ jobs:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
+        if: hashFiles('package.json') != ''
         with:
           node-version: 24
-          cache: npm
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
 
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - name: Test
+        if: hashFiles('deploy/test.sh') != ''
+        run: bash deploy/test.sh
+
+      - name: Build
+        run: bash deploy/build.sh
 
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
