@@ -2,6 +2,8 @@
 
 Simulador de colonia de hormigas en WebGL2. Toda la simulación por hormiga corre en la GPU (hasta 65.536 a la vez). Los caminos a la comida emergen de tres feromonas: **home** (rastro al nido), **food** (rastro a la comida) y **alarm**. Queda un cuarto canal libre para otra hormona.
 
+**Pruébalo:** https://taridepaco.github.io/anter/ (navegador de escritorio).
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
@@ -27,7 +29,7 @@ El panel de la derecha cambia todos los parámetros en vivo.
 
 La página sigue el sistema de diseño común de [taridepaco.github.io](https://taridepaco.github.io/): `public/css/system.css` y `public/js/theme.js` son copias sin modificar de ese repositorio (no se editan aquí; si cambian allí, se vuelven a copiar). Lo propio de Anter (pantalla, barra de estado, deslizadores, interruptores, carpetas) está en `src/style.css`, hecho con los mismos tokens. Va en español e inglés (`src/i18n.ts`) y en tema claro y oscuro; los colores del mapa para cada tema están en `src/render/palette.ts`.
 
-`.github/workflows/pages.yml` pasa los tests, compila y publica `dist/` en GitHub Pages con cada push a `main`. Requiere que en *Settings → Pages → Source* esté elegido **GitHub Actions**.
+`.github/workflows/deploy.yml` pasa los tests, compila y publica `dist/` en GitHub Pages con cada push a `main`.
 
 ## Cómo funciona
 
