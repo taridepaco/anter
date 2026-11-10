@@ -1,54 +1,474 @@
+/* Anter: lo que el sistema común (public/css/system.css) no cubre.
+   Todo con sus tokens: esquinas cuadradas, bordes de var(--bw), sombras duras. */
+
 html,
 body {
-  margin: 0;
   height: 100%;
-  overflow: hidden;
-  background: #0b0b0c;
-  color: #e8e4dc;
-  font: 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
+body {
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+}
+
+.app {
+  max-width: 1500px;
+  min-height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 28px;
+}
+
+/* --- cabecera, como la de la portada --- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  padding: 10px 0;
+  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  border-bottom: var(--bw) solid var(--line);
+}
+.topbar .back {
+  font-weight: 700;
+  text-decoration: none;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+}
+.topbar .back:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+}
+.topbar h1 {
+  font-size: 1.3rem;
+}
+
+/* --- escenario: pantalla + panel --- */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  /* hueco para las sombras duras */
+  padding-right: 5px;
+}
+
+.console,
+.panel {
+  border: var(--bw) solid var(--line);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+  min-width: 0;
+}
+
+.console {
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+  background: var(--bg);
+  overflow: hidden;
+}
 #view {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   cursor: crosshair;
   touch-action: none;
 }
-
-#hud,
-#help {
-  position: fixed;
-  left: 10px;
-  padding: 6px 9px;
-  background: rgba(10, 10, 12, 0.72);
-  border-radius: 4px;
-  pointer-events: none;
-  white-space: pre;
-}
-
-#hud {
-  top: 10px;
-}
-
-#help {
-  bottom: 10px;
-  white-space: normal;
-  max-width: calc(100vw - 40px);
-  opacity: 0.8;
-}
-
 #error {
-  position: fixed;
+  position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: var(--surface);
+}
+
+/* barra de estado de la consola */
+.hud {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  border-top: var(--bw) solid var(--line);
+  /* cada casilla pinta su borde derecho e inferior; los del canto se recortan */
+  overflow: hidden;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  margin: 0 calc(-1 * var(--bw)) calc(-1 * var(--bw)) 0;
+  border-right: var(--bw) solid var(--line);
+  border-bottom: var(--bw) solid var(--line);
+  min-width: 0;
+}
+.stat .value {
+  font-family: var(--f-util);
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* el ritmo lleva dos cifras: ocupa dos casillas */
+.stat:first-child {
+  grid-column: span 2;
+}
+
+/* --- panel de mandos --- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  scrollbar-color: var(--ink) var(--surface);
+  scrollbar-width: thin;
+}
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 16px;
+}
+.transport {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.transport .btn {
+  padding-inline: 4px;
+}
+
+.btn.sm {
+  font-size: 0.72rem;
+  padding: 9px 12px;
+  min-height: 36px;
+  box-shadow: 3px 3px 0 var(--shade);
+  text-align: center;
+}
+.btn.sm:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shade);
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.chip.tool {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip.tool:last-child {
+  grid-column: 1 / -1;
+}
+.chip.tool kbd {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  background: none;
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* muestra de color del mapa: hace de leyenda */
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line);
+}
+.chip[aria-pressed='true'] .swatch {
+  border-color: var(--bg);
+}
+
+kbd {
+  display: inline-block;
+  font-family: var(--f-util);
+  font-weight: 500;
+  font-size: var(--util);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 1.9em;
+  text-align: center;
+  padding: 2px 5px;
+  border: 2px solid var(--line);
+  background: var(--bg);
+}
+
+/* carpeta plegable */
+.folder {
+  border-top: var(--bw) solid var(--line);
+}
+.folder summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: -0.02em;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.folder summary::-webkit-details-marker {
+  display: none;
+}
+/* indicador cuadrado: + cerrada, − abierta */
+.folder summary::after {
+  content: '+';
+  flex: none;
   display: grid;
   place-items: center;
-  padding: 24px;
-  font-size: 15px;
-  text-align: center;
-  background: #0b0b0c;
+  width: 22px;
+  height: 22px;
+  border: var(--bw) solid var(--line);
+  background: var(--bg);
+  font-family: var(--f-util);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+.folder[open] summary::after {
+  content: '−';
+  background: var(--second);
+  color: var(--on-second);
+}
+.folder summary:hover {
+  background: var(--bg);
+}
+.folder summary:focus-visible {
+  outline-offset: -3px;
+}
+.folder-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 14px 18px;
 }
 
-#error[hidden] {
-  display: none;
+/* un control: nombre a la izquierda, valor a la derecha, deslizador debajo */
+.ctl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  align-items: center;
+}
+.ctl > label {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+.ctl.sub {
+  margin: -6px 0 0 6px;
+  padding-left: 14px;
+  border-left: var(--bw) solid var(--line);
+}
+.ctl.sub > label {
+  color: var(--muted);
+}
+
+.ctl .num {
+  width: 6.2em;
+  padding: 3px 6px;
+  border-width: 2px;
+  font-family: var(--f-util);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-align: right;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.ctl .num::-webkit-inner-spin-button,
+.ctl .num::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* deslizador: carril hueco que se rellena de amarillo y un mando rojo cuadrado */
+input[type='range'] {
+  grid-column: 1 / -1;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  --fill: 0%;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 12px;
+  border: var(--bw) solid var(--line);
+  /* corte seco, no degradado: la parte recorrida va en amarillo */
+  background: linear-gradient(to right, var(--second) var(--fill), var(--bg) var(--fill));
+}
+input[type='range']::-moz-range-track {
+  height: 6px;
+  border: var(--bw) solid var(--line);
+  background: var(--bg);
+}
+input[type='range']::-moz-range-progress {
+  height: 6px;
+  background: var(--second);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 24px;
+  margin-top: -9px;
+  border: var(--bw) solid var(--line);
+  border-radius: 0;
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--shade);
+}
+input[type='range']::-moz-range-thumb {
+  width: 8px;
+  height: 18px;
+  border: var(--bw) solid var(--line);
+  border-radius: 0;
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--shade);
+}
+input[type='range']:active::-webkit-slider-thumb {
+  box-shadow: none;
+}
+input[type='range']:active::-moz-range-thumb {
+  box-shadow: none;
+}
+input[type='range']:focus-visible {
+  outline-offset: 0;
+}
+
+/* interruptor: palanca cuadrada que salta de lado */
+.switch-row {
+  min-height: 36px;
+  cursor: pointer;
+}
+.switch-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+input.switch {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: var(--bw) solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+input.switch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--ink);
+}
+input.switch:checked {
+  background: var(--second);
+}
+input.switch:checked::before {
+  left: 22px;
+  background: var(--on-second);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 2px 3px 0 0;
+}
+.actions .btn {
+  flex: 1 1 auto;
+}
+
+/* ayuda de ratón y teclado */
+.keys {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
+  margin: 0;
+  align-items: center;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+.keys dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.keys dd {
+  margin: 0;
+}
+
+@media (max-width: 620px) {
+  .screen {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* escritorio: todo cabe en la ventana; la pantalla crece y el panel se desplaza por dentro */
+@media (min-width: 900px) and (min-height: 560px) {
+  body {
+    overflow: hidden;
+  }
+  .app {
+    height: 100%;
+    padding-bottom: 0;
+  }
+  .stage {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr);
+    padding-bottom: 23px;
+  }
+  .screen {
+    aspect-ratio: auto;
+    flex: 1;
+  }
+  .panel {
+    overflow-y: auto;
+  }
 }

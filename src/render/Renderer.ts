@@ -10,6 +10,7 @@ import type { PheromoneField } from '../sim/PheromoneField';
 import type { World } from '../sim/World';
 import type { Vec2 } from '../util';
 import type { Camera } from './Camera';
+import type { Palette } from './palette';
 
 export class Renderer {
   private readonly composite: Program;
@@ -27,6 +28,7 @@ export class Renderer {
     camera: Camera,
     p: SimParams,
     cursor: Vec2 | null,
+    pal: Palette,
   ): void {
     const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -50,7 +52,18 @@ export class Renderer {
       .f('u_nestPos', world.nest.x, world.nest.y)
       .f('u_nestRadius', p.nestRadius)
       .f('u_foodPerCell', p.foodPerCell)
-      .f('u_cursor', cursor?.x ?? 0, cursor?.y ?? 0, brushRadius);
+      .f('u_cursor', cursor?.x ?? 0, cursor?.y ?? 0, brushRadius)
+      .f('u_dark', pal.dark ? 1 : 0)
+      .f('u_outside', ...pal.outside)
+      .f('u_soil', ...pal.soil)
+      .f('u_homeTrail', ...pal.homeTrail)
+      .f('u_foodTrail', ...pal.foodTrail)
+      .f('u_alarmTrail', ...pal.alarmTrail)
+      .f('u_danger', ...pal.danger)
+      .f('u_food', ...pal.food)
+      .f('u_wall', ...pal.wall)
+      .f('u_nest', ...pal.nest)
+      .f('u_cursorColor', ...pal.cursor);
     drawFullscreen(gl);
 
     if (!p.showAnts) return;
@@ -62,7 +75,12 @@ export class Renderer {
       .f('u_canvas', camera.canvasWidth, camera.canvasHeight)
       .f('u_center', camera.center.x, camera.center.y)
       .f('u_zoom', camera.zoom)
-      .f('u_antSize', p.antSize);
+      .f('u_antSize', p.antSize)
+      .f('u_ant', ...pal.ant)
+      .f('u_antHungry', ...pal.antHungry)
+      .f('u_antGiveUp', ...pal.antGiveUp)
+      .f('u_antScared', ...pal.antScared)
+      .f('u_food', ...pal.food);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, ANT_CAPACITY);
   }
 }

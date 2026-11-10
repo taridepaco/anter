@@ -23,6 +23,12 @@ Requiere un navegador con WebGL2, `EXT_color_buffer_float` y 5 render targets si
 
 El panel de la derecha cambia todos los parámetros en vivo.
 
+## Página y publicación
+
+La página sigue el sistema de diseño común de [taridepaco.github.io](https://taridepaco.github.io/): `public/css/system.css` y `public/js/theme.js` son copias sin modificar de ese repositorio (no se editan aquí; si cambian allí, se vuelven a copiar). Lo propio de Anter (pantalla, barra de estado, deslizadores, interruptores, carpetas) está en `src/style.css`, hecho con los mismos tokens. Va en español e inglés (`src/i18n.ts`) y en tema claro y oscuro; los colores del mapa para cada tema están en `src/render/palette.ts`.
+
+`.github/workflows/pages.yml` pasa los tests, compila y publica `dist/` en GitHub Pages con cada push a `main`. Requiere que en *Settings → Pages → Source* esté elegido **GitHub Actions**.
+
 ## Cómo funciona
 
 Cada hormiga es un texel de cinco texturas RGBA32F de 256×256 (ver `src/sim/AntSystem.ts`):
