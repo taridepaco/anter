@@ -29,7 +29,7 @@ El panel de la derecha cambia todos los parámetros en vivo.
 
 La página sigue el sistema de diseño común de [taridepaco.github.io](https://taridepaco.github.io/): `public/css/system.css` y `public/js/theme.js` son copias sin modificar de ese repositorio (no se editan aquí; si cambian allí, se vuelven a copiar). Lo propio de Anter (pantalla, barra de estado, deslizadores, interruptores, carpetas) está en `src/style.css`, hecho con los mismos tokens. Va en español e inglés (`src/i18n.ts`) y en tema claro y oscuro; los colores del mapa para cada tema están en `src/render/palette.ts`.
 
-`.github/workflows/deploy.yml` pasa los tests, compila y publica `dist/` en GitHub Pages con cada push a `main`.
+`deploy/build.sh` compila la web en `dist/`, y ese mismo `dist/` se publica en todos los sitios: GitHub Pages (`.github/workflows/pages.yml`, con cada push a `main` y solo si pasan los tests) y, si se quiere, un servidor propio (`deploy/install.sh`). Detalles en [DEPLOY.md](DEPLOY.md).
 
 ## Cómo funciona
 
