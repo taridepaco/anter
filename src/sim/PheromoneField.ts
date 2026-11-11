@@ -1,23 +1,43 @@
 import quadVert from '../shaders/quad.vert?raw';
 import pheromoneFrag from '../shaders/pheromone_update.frag?raw';
 import { Program } from '../gl/program';
-import { bindTarget, clearTarget, createTarget, drawFullscreen, PingPong, type Target } from '../gl/targets';
-import { SHADER_DEFINES, WORLD_H, WORLD_W, type SimParams } from '../params';
+import {
+  bindTarget,
+  clearTarget,
+  createTarget,
+  deleteTarget,
+  drawFullscreen,
+  PingPong,
+  type Target,
+} from '../gl/targets';
+import { SHADER_DEFINES, type SimParams, type WorldSize } from '../params';
 
 /**
  * Feromonas (RGBA32F): R = home (rastro al nido), G = food (rastro a la comida),
  * B = alarm, A = libre para una cuarta hormona.
  */
 export class PheromoneField {
-  readonly field: PingPong;
+  field: PingPong;
   /** Lo que depositan las hormigas en un paso: [0] feromonas, [1] comida recogida y tráfico sin comida. RGBA16F. */
-  readonly deposit: Target;
+  deposit: Target;
   private readonly program: Program;
 
-  constructor(private readonly gl: WebGL2RenderingContext) {
-    this.field = new PingPong(gl, WORLD_W, WORLD_H, ['rgba32f']);
-    this.deposit = createTarget(gl, WORLD_W, WORLD_H, ['rgba16f', 'rgba16f']);
+  constructor(
+    private readonly gl: WebGL2RenderingContext,
+    size: WorldSize,
+  ) {
+    this.field = new PingPong(gl, size.w, size.h, ['rgba32f']);
+    this.deposit = createTarget(gl, size.w, size.h, ['rgba16f', 'rgba16f']);
     this.program = new Program(gl, 'pheromone_update', quadVert, pheromoneFrag, SHADER_DEFINES);
+  }
+
+  /** Cambia el tamaño de las rejillas (del mismo tamaño que el mundo). Quedan vacías. */
+  resize(size: WorldSize): void {
+    if (size.w === this.field.read.width && size.h === this.field.read.height) return;
+    this.field.dispose(this.gl);
+    deleteTarget(this.gl, this.deposit);
+    this.field = new PingPong(this.gl, size.w, size.h, ['rgba32f']);
+    this.deposit = createTarget(this.gl, size.w, size.h, ['rgba16f', 'rgba16f']);
   }
 
   get texture(): WebGLTexture {

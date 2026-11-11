@@ -1,6 +1,7 @@
 #version 300 es
 // Junta los dos totales de 1x1 en un target de 2x1 para leerlos con un solo readPixels.
 precision highp float;
+precision highp int;
 precision highp sampler2D;
 
 uniform sampler2D u_a;

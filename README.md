@@ -21,13 +21,19 @@ Requiere un navegador con WebGL2, `EXT_color_buffer_float` y 5 render targets si
 | Clic derecho / central + arrastrar | Mover la cámara |
 | Rueda | Zoom |
 | `1` `2` `3` `4` `5` | Comida, muro, peligro, borrar, mover el nido |
-| `Espacio` / `.` / `F` | Pausa / avanzar un paso / encuadrar |
+| `Espacio` / `.` / `F` | Pausa / avanzar un paso / encajar |
 
-El panel de la derecha cambia todos los parámetros en vivo.
+El panel de controles (a la izquierda; en el móvil, plegado bajo la pantalla) cambia todos los parámetros en vivo. La simulación empieza en marcha.
+
+## Tamaño del mundo
+
+El mundo es una rejilla de celdas. Por defecto ("Pantalla") toma la forma del lienzo, con celdas de un número entero de píxeles reales (2 en el ordenador, 2 o 3 en el móvil), y se dibuja alineado con los píxeles, sin muaré. Se mide al abrir la página y cada vez que se vuelve a elegir "Pantalla" en la lista. "Clásico" es el mundo de siempre, 1024×640.
+
+El escenario inicial está dibujado para el mundo clásico. En otro tamaño, cada pieza va al mismo sitio en proporción y conserva su tamaño en celdas; si el mundo es más alto que ancho, el escenario se gira. Las hormigas iniciales se ajustan a la superficie del mundo, con la misma densidad que 12.000 en 1024×640 (se pueden cambiar en el panel).
 
 ## Página y publicación
 
-La página sigue el sistema de diseño común de [taridepaco.github.io](https://taridepaco.github.io/): `public/css/system.css` y `public/js/theme.js` son copias sin modificar de ese repositorio (no se editan aquí; si cambian allí, se vuelven a copiar). Lo propio de Anter (pantalla, barra de estado, deslizadores, interruptores, carpetas) está en `src/style.css`, hecho con los mismos tokens. Va en español e inglés (`src/i18n.ts`) y en tema claro y oscuro; los colores del mapa para cada tema están en `src/render/palette.ts`.
+La página sigue el sistema de diseño común de [taridepaco.github.io](https://taridepaco.github.io/): `public/css/system.css` y `public/js/theme.js` son copias sin modificar de ese repositorio (no se editan aquí; si cambian allí, se vuelven a copiar). La página de simulador (cabecera, panel de controles plegable, pantalla con su línea de estado y, en el móvil, barra de mandos y panel en hoja) es la de [GameOfLifer](https://github.com/taridepaco/GameOfLifer); está en `index.html`, `src/style.css` y `src/ui/`, hecha con los mismos tokens. Lo propio de Anter son las herramientas del pincel, los interruptores de capas y los grupos de parámetros plegables. Va en español e inglés (`src/i18n.ts`) y en tema claro y oscuro; los colores del mapa para cada tema están en `src/render/palette.ts`.
 
 `deploy/build.sh` compila la web en `dist/`, y ese mismo `dist/` se publica en todos los sitios: GitHub Pages (`.github/workflows/pages.yml`, con cada push a `main` y solo si pasan los tests) y, si se quiere, un servidor propio (`deploy/install.sh`). Detalles en [DEPLOY.md](DEPLOY.md).
 

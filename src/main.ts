@@ -1,7 +1,16 @@
 import './style.css';
 import { createContext } from './gl/context';
 import { applyI18n, initI18n, onLang, t } from './i18n';
-import { ANT_CAPACITY, ANT_TEX, defaultParams, WORLD_H, WORLD_W, type Tool } from './params';
+import {
+  ANT_CAPACITY,
+  ANT_TEX,
+  CLASSIC_WORLD,
+  defaultAntsFor,
+  defaultParams,
+  type SimParams,
+  type Tool,
+  type WorldSize,
+} from './params';
 import { Camera } from './render/Camera';
 import { exposePalette, paletteFor } from './render/palette';
 import { Renderer } from './render/Renderer';
@@ -10,7 +19,7 @@ import { Colony, NO_SPAWN } from './sim/Colony';
 import { PheromoneField } from './sim/PheromoneField';
 import { Stats } from './sim/Stats';
 import { World, type Stroke } from './sim/World';
-import { createPanel } from './ui/panel';
+import { createPanel, type Panel, type PanelActions, type SizeValue } from './ui/panel';
 import { Hud } from './ui/hud';
 import { Input } from './ui/input';
 import { clamp } from './util';
@@ -32,42 +41,73 @@ function showError(message: string): void {
   applyI18n();
 }
 
-/** Botón de tema (auto -> claro -> oscuro) y paleta del canvas, que no hereda los tokens CSS. */
+/**
+ * Botones de tema (auto -> claro -> oscuro) y paleta del canvas, que no hereda los tokens CSS.
+ * Hay dos botones, en la cabecera y, en el móvil, en el panel (Aspecto): cambian juntos.
+ */
 function initTheme(): { palette: () => ReturnType<typeof paletteFor> } {
   const root = document.documentElement;
   const theme = window.Theme;
-  const button = document.getElementById('theme-btn') as HTMLButtonElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.theme-btn');
   let palette = paletteFor(false);
   const sync = () => {
     palette = paletteFor(!!theme && theme.isDark());
     exposePalette(palette, root);
-    if (theme) button.textContent = t(`theme.${theme.mode()}`);
+    if (theme) buttons.forEach((b) => (b.textContent = t(`theme.${theme.mode()}`)));
     const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg').trim();
   };
   if (theme) {
-    button.addEventListener('click', () => theme.cycle());
+    buttons.forEach((b) => b.addEventListener('click', () => theme.cycle()));
     theme.onChange(sync);
-  } else button.hidden = true;
+  } else buttons.forEach((b) => (b.hidden = true));
   onLang(sync);
   sync();
   return { palette: () => palette };
 }
 
-function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
+/**
+ * Mundo con la forma del canvas (el tamaño por defecto, "Pantalla"), hecho de celdas de un
+ * número entero c de píxeles reales, para que Camera.fit() lo dibuje exactamente a c píxeles por
+ * celda, alineado con los píxeles: cada celda es un cuadrado exacto y no hay muaré. c son los
+ * píxeles reales del lado largo del canvas entre un objetivo de celdas, redondeado y como mínimo
+ * 2: el objetivo es la potencia de dos más pequeña que cubre el lado largo en px CSS, entre 256 y
+ * 1024. Un ordenador sale con c = 2, un móvil con 2 o 3.
+ */
+function screenWorld(canvas: HTMLCanvasElement, maxSize: number): WorldSize {
+  const dpr = window.devicePixelRatio || 1;
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  if (!cw || !ch) return { ...CLASSIC_WORLD };
+  // el mismo tamaño en píxeles reales que resizeCanvas() da al canvas
+  const dw = Math.max(1, Math.round(cw * dpr));
+  const dh = Math.max(1, Math.round(ch * dpr));
+  let target = 256;
+  while (target < Math.max(cw, ch) && target < 1024) target *= 2;
+  const long = Math.max(dw, dh);
+  const c = Math.max(2, Math.round(long / target), Math.ceil(long / maxSize));
+  return { w: Math.floor(dw / c), h: Math.floor(dh / c) };
+}
+
+function boot(
+  params: SimParams,
+  actions: PanelActions,
+  panel: Panel,
+  theme: { palette: () => ReturnType<typeof paletteFor> },
+): void {
   const canvas = document.getElementById('view') as HTMLCanvasElement;
   const gl = createContext(canvas);
   // Todos los draws generan sus vértices con gl_VertexID/gl_InstanceID: basta un VAO vacío.
   gl.bindVertexArray(gl.createVertexArray());
 
-  const params = defaultParams();
-  const world = new World(gl);
-  const pheromones = new PheromoneField(gl);
+  const world = new World(gl, CLASSIC_WORLD);
+  const pheromones = new PheromoneField(gl, CLASSIC_WORLD);
   const ants = new AntSystem(gl);
   const stats = new Stats(gl);
   const renderer = new Renderer(gl);
   const camera = new Camera();
-  const hud = new Hud(document.getElementById('hud')!);
+  const hud = new Hud(document.getElementById('stats')!);
+  const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
 
   let colony = new Colony(ANT_CAPACITY, params.initialNestFood, 0);
   let tick = 0;
@@ -76,6 +116,9 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
   // Las lecturas de estadísticas que estaban en vuelo al reiniciar se descartan.
   let generation = 0;
   let capturedGeneration = -1;
+  // El mundo se crea cuando han llegado las fuentes (ver el final); hasta entonces los mandos esperan.
+  let ready = false;
+  let screenSize: WorldSize = { ...CLASSIC_WORLD };
 
   function reset(): void {
     generation++;
@@ -87,44 +130,64 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
     resetEvents = false;
   }
 
-  const actions = {
-    step: () => (stepRequested = true),
-    reset,
-    clearPheromones: () => pheromones.clear(),
-    clearMap: () => world.clear(),
-    fit: () => camera.fit(),
-  };
-
-  const input = new Input(canvas, camera, params, {
-    onNest: (pos) => {
-      world.nest = { x: clamp(pos.x, 0, WORLD_W), y: clamp(pos.y, 0, WORLD_H) };
-    },
-    onTogglePause: () => (params.paused = !params.paused),
-    onStep: actions.step,
-    onFit: actions.fit,
-  });
-  const panel = createPanel(document.getElementById('panel')!, params, actions);
-  applyI18n();
-
-  let fitted = false;
-  function resize(): void {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
-    const height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+  /** Lienzo a píxeles reales: tamaño CSS × devicePixelRatio. Se comprueba en cada frame. */
+  function resizeCanvas(): void {
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+    const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
     if (width !== canvas.width || height !== canvas.height) {
       canvas.width = width;
       canvas.height = height;
     }
-    camera.setCanvas(canvas.width, canvas.height);
-    // El primer encuadre espera a que el canvas tenga su tamaño CSS real.
-    if (!fitted && canvas.clientWidth > 0) {
-      camera.fit();
-      fitted = true;
+    if (width !== camera.canvasWidth || height !== camera.canvasHeight) {
+      camera.setCanvas(width, height);
+      if (camera.autoFit) camera.fit();
     }
   }
 
-  resize();
-  reset();
+  function fit(): void {
+    resizeCanvas();
+    camera.fit();
+  }
+
+  /** Mundo nuevo de la lista de tamaños, con el escenario inicial y las hormigas a su medida. */
+  function newWorld(value: SizeValue): void {
+    const size = value === 'screen' ? screenSize : CLASSIC_WORLD;
+    world.resize(size);
+    pheromones.resize(size);
+    camera.setWorld(size);
+    params.initialAnts = defaultAntsFor(size);
+    panel.sync();
+    reset();
+    fit();
+  }
+
+  Object.assign(actions, {
+    play: () => (params.paused = !params.paused),
+    step: () => ready && (stepRequested = true),
+    reset: () => ready && reset(),
+    clearPheromones: () => ready && pheromones.clear(),
+    clearMap: () => ready && world.clear(),
+    fit: () => ready && fit(),
+    setSize: (value: SizeValue) => {
+      if (!ready) return;
+      // "Pantalla" se vuelve a medir: el canvas puede haber cambiado desde que se abrió la página
+      if (value === 'screen') {
+        screenSize = screenWorld(canvas, maxSize);
+        panel.setScreenSize(screenSize);
+      }
+      newWorld(value);
+    },
+  } satisfies PanelActions);
+
+  const input = new Input(canvas, camera, params, {
+    onNest: (pos) => {
+      if (ready) world.nest = { x: clamp(pos.x, 0, world.width), y: clamp(pos.y, 0, world.height) };
+    },
+    onTogglePause: actions.play,
+    onStep: actions.step,
+    onFit: actions.fit,
+  });
 
   let frameCount = 0;
   let lastTime = performance.now();
@@ -136,7 +199,7 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
     lastTime = now;
     fps += (1 / dt - fps) * 0.05;
     frameCount++;
-    resize();
+    resizeCanvas();
 
     pollStats();
     let steps = params.paused ? 0 : params.stepsPerFrame;
@@ -153,7 +216,28 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
     hud.update(now, fps, ticksPerSecond, tick, colony, params);
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+
+  // Hasta que exista el mundo, el canvas se pinta del color de alrededor del mundo (no de negro).
+  resizeCanvas();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.clearColor(...theme.palette().outside, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // El mundo "Pantalla" toma el tamaño del canvas, y el canvas solo tiene su tamaño final cuando
+  // han llegado las fuentes web: cambian el ancho del panel plegado y la altura de la cabecera.
+  // Se esperan, como mucho 1,5 s.
+  const fontsReady = document.fonts?.ready
+    ? Promise.race([document.fonts.ready, new Promise((done) => setTimeout(done, 1500))])
+    : Promise.resolve();
+  void fontsReady.then(() => {
+    resizeCanvas();
+    screenSize = screenWorld(canvas, maxSize);
+    panel.setScreenSize(screenSize);
+    ready = true;
+    newWorld('screen'); // y arranca en marcha: params.paused empieza en false
+    lastTime = performance.now();
+    requestAnimationFrame(frame);
+  });
 
   /** Avanza `steps` ticks. El trazo de pincel y los nacimientos se aplican en el primero. */
   function simulate(steps: number, stroke: Stroke | null): void {
@@ -162,6 +246,7 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
         world.texture,
         pheromones.texture,
         {
+          world: world.size,
           tick,
           seed: params.seed,
           nest: world.nest,
@@ -209,6 +294,7 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
       anter: {
         params,
         camera,
+        world,
         actions,
         get colony() {
           return colony;
@@ -306,10 +392,23 @@ function boot(theme: { palette: () => ReturnType<typeof paletteFor> }): void {
   }
 }
 
+// El panel va primero (lleva la segunda copia del botón de tema); sus acciones las pone boot().
+const params = defaultParams();
+const noop = () => {};
+const actions: PanelActions = {
+  play: noop,
+  step: noop,
+  reset: noop,
+  fit: noop,
+  clearPheromones: noop,
+  clearMap: noop,
+  setSize: noop,
+};
+const panel = createPanel(document.getElementById('controls')!, params, actions);
 const theme = initTheme();
 initI18n();
 try {
-  boot(theme);
+  boot(params, actions, panel, theme);
 } catch (err) {
   console.error(err);
   showError(err instanceof Error ? err.message : String(err));
