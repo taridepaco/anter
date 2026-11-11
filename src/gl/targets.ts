@@ -59,6 +59,11 @@ export function createTarget(
   return { fbo, textures, width, height };
 }
 
+export function deleteTarget(gl: WebGL2RenderingContext, target: Target): void {
+  target.textures.forEach((tex) => gl.deleteTexture(tex));
+  gl.deleteFramebuffer(target.fbo);
+}
+
 export function bindTarget(gl: WebGL2RenderingContext, target: Target): void {
   gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
   gl.viewport(0, 0, target.width, target.height);
@@ -82,6 +87,11 @@ export class PingPong {
 
   swap(): void {
     [this.read, this.write] = [this.write, this.read];
+  }
+
+  dispose(gl: WebGL2RenderingContext): void {
+    deleteTarget(gl, this.read);
+    deleteTarget(gl, this.write);
   }
 }
 

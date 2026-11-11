@@ -4,7 +4,7 @@ import antsVert from '../shaders/ants_draw.vert?raw';
 import antsFrag from '../shaders/ants_draw.frag?raw';
 import { Program } from '../gl/program';
 import { drawFullscreen } from '../gl/targets';
-import { ANT_CAPACITY, SHADER_DEFINES, WORLD_H, WORLD_W, type SimParams } from '../params';
+import { ANT_CAPACITY, SHADER_DEFINES, type SimParams } from '../params';
 import type { AntSystem } from '../sim/AntSystem';
 import type { PheromoneField } from '../sim/PheromoneField';
 import type { World } from '../sim/World';
@@ -39,7 +39,7 @@ export class Renderer {
       .use()
       .tex('u_world', 0, world.texture)
       .tex('u_pher', 1, pheromones.texture)
-      .f('u_worldSize', WORLD_W, WORLD_H)
+      .f('u_worldSize', world.width, world.height)
       .f('u_canvas', camera.canvasWidth, camera.canvasHeight)
       .f('u_center', camera.center.x, camera.center.y)
       .f('u_zoom', camera.zoom)

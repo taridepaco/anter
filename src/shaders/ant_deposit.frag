@@ -1,5 +1,6 @@
 #version 300 es
 precision highp float;
+precision highp int;
 
 in vec4 v_pher;
 in vec2 v_consume;

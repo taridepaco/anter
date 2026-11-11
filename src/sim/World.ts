@@ -2,7 +2,7 @@ import quadVert from '../shaders/quad.vert?raw';
 import worldFrag from '../shaders/world_update.frag?raw';
 import { Program } from '../gl/program';
 import { bindTarget, clearTarget, drawFullscreen, PingPong, uploadTexture } from '../gl/targets';
-import { defaultNest, SHADER_DEFINES, WORLD_H, WORLD_W, type SimParams, type Tool } from '../params';
+import { defaultNest, fromClassic, SHADER_DEFINES, type SimParams, type Tool, type WorldSize } from '../params';
 import type { Vec2 } from '../util';
 
 /** Trazo de pincel en coordenadas de mundo (de la posición anterior del ratón a la actual). */
@@ -20,22 +20,45 @@ const DANGER = 2;
 
 /** Rejilla del mundo (RGBA32F): R = muro, G = comida, B = peligro, A = libre. El nido va aparte. */
 export class World {
-  readonly field: PingPong;
-  nest: Vec2 = defaultNest();
+  field: PingPong;
+  nest: Vec2;
   private readonly program: Program;
 
-  constructor(private readonly gl: WebGL2RenderingContext) {
-    this.field = new PingPong(gl, WORLD_W, WORLD_H, ['rgba32f']);
+  constructor(
+    private readonly gl: WebGL2RenderingContext,
+    size: WorldSize,
+  ) {
+    this.field = new PingPong(gl, size.w, size.h, ['rgba32f']);
+    this.nest = defaultNest(size);
     this.program = new Program(gl, 'world_update', quadVert, worldFrag, SHADER_DEFINES);
+  }
+
+  get width(): number {
+    return this.field.read.width;
+  }
+
+  get height(): number {
+    return this.field.read.height;
+  }
+
+  get size(): WorldSize {
+    return { w: this.width, h: this.height };
   }
 
   get texture(): WebGLTexture {
     return this.field.read.textures[0];
   }
 
+  /** Cambia el tamaño de la rejilla. Queda vacía: después hace falta loadDefault(). */
+  resize(size: WorldSize): void {
+    if (size.w === this.width && size.h === this.height) return;
+    this.field.dispose(this.gl);
+    this.field = new PingPong(this.gl, size.w, size.h, ['rgba32f']);
+  }
+
   loadDefault(p: SimParams): void {
-    this.nest = defaultNest();
-    uploadTexture(this.gl, this.texture, WORLD_W, WORLD_H, buildDefaultMap(p));
+    this.nest = defaultNest(this.size);
+    uploadTexture(this.gl, this.texture, this.width, this.height, buildDefaultMap(p, this.size));
   }
 
   clear(): void {
@@ -60,12 +83,17 @@ export class World {
   }
 }
 
-/** Escenario inicial: tres montones de comida, un muro entre el nido y la comida, y una zona peligrosa. */
-export function buildDefaultMap(p: SimParams): Float32Array {
-  const data = new Float32Array(WORLD_W * WORLD_H * 4);
+/**
+ * Escenario inicial: tres montones de comida, un muro entre el nido y la comida, y una zona
+ * peligrosa. Está dibujado para el mundo clásico (1024×640); en otro tamaño cada pieza va al mismo
+ * sitio en proporción (fromClassic) y conserva su tamaño en celdas.
+ */
+export function buildDefaultMap(p: SimParams, size: WorldSize): Float32Array {
+  const { w: width, h: height } = size;
+  const data = new Float32Array(width * height * 4);
   const set = (x: number, y: number, channel: number, value: number) => {
-    if (x < 0 || y < 0 || x >= WORLD_W || y >= WORLD_H) return;
-    data[(y * WORLD_W + x) * 4 + channel] = value;
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    data[(y * width + x) * 4 + channel] = value;
   };
   const disc = (cx: number, cy: number, r: number, channel: number, value: number) => {
     for (let y = Math.floor(cy - r); y <= cy + r; y++) {
@@ -74,18 +102,23 @@ export function buildDefaultMap(p: SimParams): Float32Array {
       }
     }
   };
-  const wall = (x0: number, y0: number, x1: number, y1: number, halfWidth: number) => {
-    const steps = Math.ceil(Math.hypot(x1 - x0, y1 - y0));
+  const wall = (from: Vec2, to: Vec2, halfWidth: number) => {
+    const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y)));
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
-      disc(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, halfWidth, WALL, 1);
+      disc(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t, halfWidth, WALL, 1);
     }
   };
+  const at = (x: number, y: number) => fromClassic(x, y, size);
+  const piece = (x: number, y: number, r: number, channel: number, value: number) => {
+    const c = at(x, y);
+    disc(c.x, c.y, r, channel, value);
+  };
 
-  disc(780, 170, 24, FOOD, p.foodPerCell);
-  disc(860, 470, 20, FOOD, p.foodPerCell);
-  disc(140, 560, 14, FOOD, p.foodPerCell);
-  wall(560, 120, 560, 400, 5);
-  disc(660, 520, 26, DANGER, p.dangerIntensity);
+  piece(780, 170, 24, FOOD, p.foodPerCell);
+  piece(860, 470, 20, FOOD, p.foodPerCell);
+  piece(140, 560, 14, FOOD, p.foodPerCell);
+  wall(at(560, 120), at(560, 400), 5);
+  piece(660, 520, 26, DANGER, p.dangerIntensity);
   return data;
 }

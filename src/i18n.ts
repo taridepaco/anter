@@ -9,33 +9,41 @@ const STORAGE_KEY = 'taridepaco-lang';
 
 const es = {
   kind: 'Simulador',
-  'aria.sim': 'Simulación',
-  'aria.panel': 'Parámetros',
+  panel: 'Controles',
+  pitch: 'Una colonia de hormigas en la GPU de tu navegador: los caminos a la comida salen solos de tres feromonas.',
+  deck: 'Mandos principales',
+  'aria.sim': 'Mundo de las hormigas',
   'theme.auto': 'Tema: auto',
   'theme.light': 'Tema: claro',
   'theme.dark': 'Tema: oscuro',
 
-  // Estado
-  'hud.rate': 'Ritmo',
-  'hud.paused': 'Pausa',
-  'hud.tick': 'Tick',
-  'hud.ants': 'Hormigas',
-  'hud.carrying': 'Con comida',
-  'hud.nestFood': 'Comida nido',
-  'hud.energy': 'Energía media',
-  'hud.danger': 'Peligro medio',
-  'hud.born': 'Nacidas',
-  'hud.died': 'Muertas',
-  'hud.delivered': 'Entregas',
+  // Línea de estado
+  'st.paused': 'en pausa',
+  'st.ants': 'hormigas',
+  'st.carrying': 'con comida',
+  'st.nestFood': 'comida nido',
+  'st.energy': 'energía media',
+  'st.danger': 'peligro medio',
+  'st.born': 'nacidas',
+  'st.died': 'muertas',
+  'st.delivered': 'entregas',
 
   // Mandos
+  'act.play': 'Play',
   'act.pause': 'Pausa',
-  'act.resume': 'Reanudar',
   'act.step': 'Paso',
   'act.reset': 'Reiniciar',
-  'act.fit': 'Encuadrar (F)',
+  'act.fit': 'Encajar',
   'act.clearPheromones': 'Borrar feromonas',
   'act.clearMap': 'Vaciar mapa',
+  't.play': 'Reproducir / pausa (espacio)',
+  't.step': 'Avanzar un paso (.)',
+  't.reset': 'Volver al escenario inicial',
+  't.fit': 'Ver el mundo entero (F)',
+
+  size: 'Tamaño del mundo',
+  'size.screen': 'Pantalla',
+  'size.classic': 'Clásico',
 
   'tool.label': 'Herramienta',
   'tool.food': 'Comida',
@@ -44,18 +52,19 @@ const es = {
   'tool.erase': 'Borrar',
   'tool.nest': 'Nido',
 
-  'help.h': 'Ratón y teclado',
+  'g.run': 'Simulación',
+  'g.look': 'Aspecto',
+  'help.h': 'Manejo',
   'help.paint': 'Pintar con la herramienta activa',
   'help.pan': 'Mover la cámara',
   'help.zoom': 'Zoom',
   'help.tools': 'Comida, muro, peligro, borrar, nido',
-  'help.keys': 'Pausa, avanzar un paso, encuadrar',
+  'help.keys': 'Pausa, avanzar un paso, encajar',
   'key.left': 'Clic izq.',
   'key.right': 'Clic der.',
   'key.wheel': 'Rueda',
   'key.space': 'Espacio',
 
-  'f.sim': 'Simulación',
   'f.brush': 'Pincel',
   'f.layers': 'Capas',
   'f.move': 'Movimiento y sentidos',
@@ -134,31 +143,39 @@ const es = {
 
 const en: Record<keyof typeof es, string> = {
   kind: 'Simulator',
-  'aria.sim': 'Simulation',
-  'aria.panel': 'Parameters',
+  panel: 'Controls',
+  pitch: "An ant colony on your browser's GPU: the paths to food emerge on their own from three pheromones.",
+  deck: 'Main controls',
+  'aria.sim': 'Ant world',
   'theme.auto': 'Theme: auto',
   'theme.light': 'Theme: light',
   'theme.dark': 'Theme: dark',
 
-  'hud.rate': 'Rate',
-  'hud.paused': 'Paused',
-  'hud.tick': 'Tick',
-  'hud.ants': 'Ants',
-  'hud.carrying': 'Carrying',
-  'hud.nestFood': 'Nest food',
-  'hud.energy': 'Avg energy',
-  'hud.danger': 'Avg danger',
-  'hud.born': 'Born',
-  'hud.died': 'Died',
-  'hud.delivered': 'Deliveries',
+  'st.paused': 'paused',
+  'st.ants': 'ants',
+  'st.carrying': 'carrying food',
+  'st.nestFood': 'nest food',
+  'st.energy': 'avg energy',
+  'st.danger': 'avg danger',
+  'st.born': 'born',
+  'st.died': 'died',
+  'st.delivered': 'deliveries',
 
+  'act.play': 'Play',
   'act.pause': 'Pause',
-  'act.resume': 'Resume',
   'act.step': 'Step',
   'act.reset': 'Reset',
-  'act.fit': 'Fit view (F)',
+  'act.fit': 'Fit',
   'act.clearPheromones': 'Clear pheromones',
   'act.clearMap': 'Clear map',
+  't.play': 'Play / pause (space)',
+  't.step': 'Step once (.)',
+  't.reset': 'Back to the starting scene',
+  't.fit': 'See the whole world (F)',
+
+  size: 'World size',
+  'size.screen': 'Screen',
+  'size.classic': 'Classic',
 
   'tool.label': 'Tool',
   'tool.food': 'Food',
@@ -167,18 +184,19 @@ const en: Record<keyof typeof es, string> = {
   'tool.erase': 'Erase',
   'tool.nest': 'Nest',
 
-  'help.h': 'Mouse and keyboard',
+  'g.run': 'Simulation',
+  'g.look': 'Appearance',
+  'help.h': 'How to use it',
   'help.paint': 'Paint with the active tool',
   'help.pan': 'Move the camera',
   'help.zoom': 'Zoom',
   'help.tools': 'Food, wall, danger, erase, nest',
-  'help.keys': 'Pause, step once, fit view',
+  'help.keys': 'Pause, step once, fit',
   'key.left': 'Left click',
   'key.right': 'Right click',
   'key.wheel': 'Wheel',
   'key.space': 'Space',
 
-  'f.sim': 'Simulation',
   'f.brush': 'Brush',
   'f.layers': 'Layers',
   'f.move': 'Movement and senses',
@@ -269,11 +287,14 @@ export function onLang(fn: () => void): void {
   listeners.push(fn);
 }
 
-/** Repinta todo lo marcado con data-i18n (texto) o data-i18n-aria (aria-label). */
+/** Repinta todo lo marcado con data-i18n (texto), data-i18n-title (title) o data-i18n-aria (aria-label). */
 export function applyI18n(): void {
   document.documentElement.lang = lang;
   document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
     el.textContent = t(el.dataset.i18n as TextKey);
+  });
+  document.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach((el) => {
+    el.title = t(el.dataset.i18nTitle as TextKey);
   });
   document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach((el) => {
     el.setAttribute('aria-label', t(el.dataset.i18nAria as TextKey));

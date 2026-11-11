@@ -46,29 +46,44 @@
     <link rel="stylesheet" href="/css/system.css" />
   </head>
   <body>
-    <div class="app">
-      <header class="topbar">
-        <a class="util back" href="https://taridepaco.github.io/">← taridepaco</a>
-        <div class="brand">
-          <h1>Anter</h1>
-          <span class="tag" data-i18n="kind">Simulador</span>
-        </div>
-        <button class="chip" type="button" id="theme-btn">Tema: auto</button>
-        <div class="lang-switch" role="group" aria-label="Language / Idioma">
-          <button type="button" data-lang="es" lang="es" aria-label="Español" aria-pressed="true">ES</button>
-          <button type="button" data-lang="en" lang="en" aria-label="English" aria-pressed="false">EN</button>
-        </div>
-      </header>
+    <header class="topbar">
+      <a class="util back" href="https://taridepaco.github.io/"><span class="back-arrow" aria-hidden="true">←</span><span class="back-text"> taridepaco</span></a>
+      <h1>Anter</h1>
+      <span class="tag" data-i18n="kind">Simulador</span>
+      <button class="chip theme-btn" type="button">Tema: auto</button>
+      <div class="lang-switch" role="group" aria-label="Language / Idioma">
+        <button type="button" data-lang="es" lang="es" aria-label="Español" aria-pressed="true">ES</button>
+        <button type="button" data-lang="en" lang="en" aria-label="English" aria-pressed="false">EN</button>
+      </div>
+    </header>
 
-      <main class="stage">
-        <section class="console" data-i18n-aria="aria.sim" aria-label="Simulación">
-          <div class="screen">
-            <canvas id="view"></canvas>
-            <div id="error" role="alert" hidden></div>
-          </div>
-          <div class="hud" id="hud"></div>
-        </section>
-        <aside class="panel" id="panel" data-i18n-aria="aria.panel" aria-label="Parámetros"></aside>
+    <div class="app">
+      <details id="panel" open>
+        <summary><span class="util" data-i18n="panel">Controles</span></summary>
+        <script>
+          // móvil y pantallas bajas (el móvil en horizontal): panel plegado antes del primer pintado
+          if (window.matchMedia && matchMedia('(max-width: 720px), (max-height: 500px)').matches)
+            document.getElementById('panel').open = false;
+        </script>
+        <!-- lo construye src/ui/panel.ts -->
+        <div id="controls"></div>
+      </details>
+
+      <!-- solo en el móvil: los tres mandos más usados -->
+      <div class="deck" role="group" data-i18n-aria="deck" aria-label="Mandos principales">
+        <button class="btn play" type="button" data-act="play" data-i18n-title="t.play">
+          <span data-i18n="act.play">Play</span>
+        </button>
+        <button class="btn ghost" type="button" data-act="step" data-i18n="act.step" data-i18n-title="t.step">Paso</button>
+        <button class="btn ghost" type="button" data-act="reset" data-i18n="act.reset" data-i18n-title="t.reset">
+          Reiniciar
+        </button>
+      </div>
+
+      <main class="screen">
+        <canvas id="view" data-i18n-aria="aria.sim" aria-label="Mundo de las hormigas"></canvas>
+        <div id="stats" class="status" aria-live="off">&nbsp;</div>
+        <div id="error" class="error" role="alert" hidden></div>
       </main>
     </div>
     <script type="module" src="/src/main.ts"></script>

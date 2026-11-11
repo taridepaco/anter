@@ -4,11 +4,12 @@ import depositVert from '../shaders/ant_deposit.vert?raw';
 import depositFrag from '../shaders/ant_deposit.frag?raw';
 import { Program } from '../gl/program';
 import { bindTarget, drawFullscreen, PingPong, uploadTexture, type Target } from '../gl/targets';
-import { ANT_CAPACITY, ANT_TEX, SHADER_DEFINES, WORLD_H, WORLD_W, type SimParams } from '../params';
+import { ANT_CAPACITY, ANT_TEX, SHADER_DEFINES, type SimParams, type WorldSize } from '../params';
 import { degToRad, mulberry32, type Vec2 } from '../util';
 import type { SpawnWindow } from './Colony';
 
 export interface AntStep {
+  world: WorldSize;
   tick: number;
   seed: number;
   nest: Vec2;
@@ -85,7 +86,7 @@ export class AntSystem {
       .tex('u_events', 4, read[4])
       .tex('u_world', 5, world)
       .tex('u_pher', 6, pheromones)
-      .f('u_worldSize', WORLD_W, WORLD_H)
+      .f('u_worldSize', step.world.w, step.world.h)
       .u('u_tick', step.tick)
       .u('u_seed', step.seed)
       .f('u_nestPos', step.nest.x, step.nest.y)
@@ -122,7 +123,7 @@ export class AntSystem {
     this.state.swap();
   }
 
-  /** Dibuja lo que emite cada hormiga en `target` con blending aditivo. */
+  /** Dibuja lo que emite cada hormiga en `target` (del tamaño del mundo) con blending aditivo. */
   deposit(target: Target, nest: Vec2, p: SimParams): void {
     const gl = this.gl;
     const read = this.state.read.textures;
@@ -133,7 +134,7 @@ export class AntSystem {
       .use()
       .tex('u_state0', 0, read[0])
       .tex('u_state1', 1, read[1])
-      .f('u_worldSize', WORLD_W, WORLD_H)
+      .f('u_worldSize', target.width, target.height)
       .f('u_nestPos', nest.x, nest.y)
       .f('u_nestRadius', p.nestRadius)
       .f('u_emitTauHome', p.emitTauHome)

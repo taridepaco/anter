@@ -1,378 +1,408 @@
 /* Anter: lo que el sistema común (public/css/system.css) no cubre.
-   Todo con sus tokens: esquinas cuadradas, bordes de var(--bw), sombras duras. */
-
+   Página de simulador como la de GameOfLifer: cabecera, panel plegable a la izquierda, pantalla
+   enmarcada con su línea de estado y, en el móvil, barra de mandos y panel en hoja.
+   El panel, el deslizador y el desplegable son los mismos que en GameOfLifer y Boider; las
+   herramientas, los interruptores y los grupos plegables son propios de Anter.
+   Todo con los tokens del sistema: sin colores literales ni radios. */
 html,
 body {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
-  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
-}
-
-.app {
-  max-width: 1500px;
-  min-height: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding-bottom: 28px;
+  height: 100dvh;
+  overflow: hidden;
 }
 
-/* --- cabecera, como la de la portada --- */
+/* --- cabecera de proyecto --- */
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--bg);
-  padding: 10px 0;
-  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  flex: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 18px;
   align-items: center;
+  gap: 8px 14px;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  padding-top: max(10px, env(safe-area-inset-top, 0px));
   border-bottom: var(--bw) solid var(--line);
 }
 .topbar .back {
-  font-weight: 700;
-  text-decoration: none;
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-}
-.topbar .back:hover {
-  text-decoration: underline;
   text-underline-offset: 4px;
 }
-.topbar .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.topbar h1 {
+  font-size: 1.25rem;
+}
+.topbar .tag {
   margin-right: auto;
 }
-.topbar h1 {
-  font-size: 1.3rem;
+/* con el dedo (un móvil en horizontal pasa de 720px) el enlace de vuelta mide 36px de alto,
+   como los botones de al lado; la fila no cambia */
+@media (pointer: coarse) {
+  .topbar .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+  }
 }
 
-/* --- escenario: pantalla + panel --- */
-.stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 22px;
-  /* hueco para las sombras duras */
-  padding-right: 5px;
-}
-
-.console,
-.panel {
-  border: var(--bw) solid var(--line);
-  box-shadow: var(--shadow);
-  background: var(--surface);
-  min-width: 0;
-}
-
-.console {
-  display: flex;
-  flex-direction: column;
-}
-
-.screen {
-  position: relative;
-  aspect-ratio: 16 / 10;
+.app {
+  flex: 1;
   min-height: 0;
-  background: var(--bg);
-  overflow: hidden;
-}
-#view {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
-  touch-action: none;
-}
-#error {
-  position: absolute;
-  inset: 0;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  text-align: center;
-  background: var(--surface);
 }
 
-/* barra de estado de la consola */
-.hud {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  border-top: var(--bw) solid var(--line);
-  /* cada casilla pinta su borde derecho e inferior; los del canto se recortan */
-  overflow: hidden;
-}
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 7px 10px;
-  margin: 0 calc(-1 * var(--bw)) calc(-1 * var(--bw)) 0;
-  border-right: var(--bw) solid var(--line);
-  border-bottom: var(--bw) solid var(--line);
-  min-width: 0;
-}
-.stat .value {
-  font-family: var(--f-util);
-  font-weight: 700;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* el ritmo lleva dos cifras: ocupa dos casillas */
-.stat:first-child {
-  grid-column: span 2;
-}
-
-/* --- panel de mandos --- */
-.panel {
-  display: flex;
-  flex-direction: column;
-  scrollbar-color: var(--ink) var(--surface);
-  scrollbar-width: thin;
-}
-
-.deck {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 14px 14px 16px;
-}
-.transport {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.transport .btn {
-  padding-inline: 4px;
-}
-
-.btn.sm {
-  font-size: 0.72rem;
-  padding: 9px 12px;
-  min-height: 36px;
-  box-shadow: 3px 3px 0 var(--shade);
-  text-align: center;
-}
-.btn.sm:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--shade);
-}
-
-.tools {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.chip.tool {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.chip.tool:last-child {
-  grid-column: 1 / -1;
-}
-.chip.tool kbd {
-  border: 0;
-  padding: 0;
-  min-width: 0;
-  background: none;
-  color: inherit;
-  opacity: 0.7;
-}
-
-/* muestra de color del mapa: hace de leyenda */
-.swatch {
-  display: inline-block;
+/* --- panel de controles --- */
+#panel {
   flex: none;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--line);
+  background: var(--surface);
+  border-right: var(--bw) solid var(--line);
+  overflow-y: auto;
+  scrollbar-color: var(--line) var(--surface);
 }
-.chip[aria-pressed='true'] .swatch {
-  border-color: var(--bg);
-}
-
-kbd {
-  display: inline-block;
-  font-family: var(--f-util);
-  font-weight: 500;
-  font-size: var(--util);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  min-width: 1.9em;
-  text-align: center;
-  padding: 2px 5px;
-  border: 2px solid var(--line);
-  background: var(--bg);
+#panel[open] {
+  width: 320px;
 }
 
-/* carpeta plegable */
-.folder {
-  border-top: var(--bw) solid var(--line);
-}
-.folder summary {
+#panel > summary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   min-height: 44px;
-  padding: 8px 14px;
+  padding: 8px 16px;
+  background: var(--surface);
   cursor: pointer;
-  list-style: none;
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: -0.02em;
   user-select: none;
   -webkit-user-select: none;
+  list-style: none;
 }
-.folder summary::-webkit-details-marker {
+#panel > summary::-webkit-details-marker {
   display: none;
 }
-/* indicador cuadrado: + cerrada, − abierta */
-.folder summary::after {
-  content: '+';
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: var(--bw) solid var(--line);
-  background: var(--bg);
+#panel > summary::after {
+  content: '[+]';
   font-family: var(--f-util);
-  font-size: 0.8rem;
-  line-height: 1;
+  font-weight: 700;
+  font-size: var(--util);
 }
-.folder[open] summary::after {
-  content: '−';
-  background: var(--second);
-  color: var(--on-second);
+#panel[open] > summary {
+  border-bottom: var(--bw) solid var(--line);
 }
-.folder summary:hover {
-  background: var(--bg);
+#panel[open] > summary::after {
+  content: '[–]';
 }
-.folder summary:focus-visible {
+#panel > summary:focus-visible {
   outline-offset: -3px;
 }
-.folder-body {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 6px 14px 18px;
+
+#controls {
+  padding: 0 16px 24px;
 }
 
-/* un control: nombre a la izquierda, valor a la derecha, deslizador debajo */
-.ctl {
+.pitch {
+  padding: 14px 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 18px;
+  border: 0;
+  border-bottom: var(--bw) dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+fieldset:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+legend {
+  padding: 16px 0 0;
+  margin-bottom: 10px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: -0.02em;
+}
+
+/* grupo de parámetros finos: como un fieldset, pero plegable ([+] / [–], como el panel) */
+.group {
+  border-bottom: var(--bw) dashed var(--line);
+}
+.group > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 0 8px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  list-style: none;
+}
+.group > summary::-webkit-details-marker {
+  display: none;
+}
+.group > summary::after {
+  content: '[+]';
+  flex: none;
+  font-family: var(--f-util);
+  font-size: var(--util);
+  letter-spacing: 0;
+}
+.group[open] > summary::after {
+  content: '[–]';
+}
+.group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 0 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field > label {
+  display: block;
+  font-size: 0.92rem;
+}
+
+/* botones a dos columnas; el margen derecho deja ver la sombra */
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 5px 5px 0;
+}
+.buttons .btn {
+  width: 100%;
+  min-height: 40px;
+  text-align: center;
+}
+.buttons .wide {
+  grid-column: 1 / -1;
+}
+
+/* play / pausa con icono de píxeles dibujado en CSS (los símbolos ▶ ⏸ salen como emoji en móvil) */
+.play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.play::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 14px;
+  background: currentColor;
+  /* triángulo escalonado de 5 columnas × 9 filas */
+  clip-path: polygon(
+    0 0,
+    20% 0,
+    20% 11.11%,
+    40% 11.11%,
+    40% 22.22%,
+    60% 22.22%,
+    60% 33.33%,
+    80% 33.33%,
+    80% 44.44%,
+    100% 44.44%,
+    100% 55.56%,
+    80% 55.56%,
+    80% 66.67%,
+    60% 66.67%,
+    60% 77.78%,
+    40% 77.78%,
+    40% 88.89%,
+    20% 88.89%,
+    20% 100%,
+    0 100%
+  );
+}
+.play[data-running='true']::before {
+  width: 10px;
+  clip-path: polygon(0 0, 30% 0, 30% 100%, 0 100%, 0 0, 70% 0, 100% 0, 100% 100%, 70% 100%, 70% 0);
+}
+
+/* desplegable: caja cuadrada con flecha escalonada */
+.select {
+  position: relative;
+  display: block;
+}
+.select select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 40px;
+  margin: 0;
+  padding: 7px 36px 7px 10px;
+  font-family: var(--f-util);
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: var(--bw) solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+}
+.select::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  width: 12px;
+  height: 6px;
+  margin-top: -3px;
+  background: var(--ink);
+  pointer-events: none;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 33.33%,
+    83.33% 33.33%,
+    83.33% 66.67%,
+    66.67% 66.67%,
+    66.67% 100%,
+    33.33% 100%,
+    33.33% 66.67%,
+    16.67% 66.67%,
+    16.67% 33.33%,
+    0 33.33%
+  );
+}
+.select select:hover {
+  background: var(--surface);
+}
+.select option {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* deslizador: etiqueta y valor arriba, pista cuadrada debajo (igual que en GameOfLifer y Boider).
+   El valor es un campo: se puede escribir un valor exacto, también fuera del paso de la pista. */
+.slider {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 10px;
   align-items: center;
+  gap: 2px 8px;
 }
-.ctl > label {
+.slider > label {
   display: block;
   font-size: 0.92rem;
   line-height: 1.25;
 }
-.ctl.sub {
-  margin: -6px 0 0 6px;
-  padding-left: 14px;
-  border-left: var(--bw) solid var(--line);
-}
-.ctl.sub > label {
-  color: var(--muted);
-}
-
-.ctl .num {
-  width: 6.2em;
-  padding: 3px 6px;
+.slider .num {
+  width: 6.4em;
+  padding: 2px 6px;
   border-width: 2px;
   font-family: var(--f-util);
-  font-weight: 500;
-  font-size: 0.72rem;
+  font-weight: 700;
+  font-size: var(--util);
+  font-variant-numeric: tabular-nums;
   text-align: right;
   appearance: textfield;
   -moz-appearance: textfield;
 }
-.ctl .num::-webkit-inner-spin-button,
-.ctl .num::-webkit-outer-spin-button {
+.slider .num::-webkit-inner-spin-button,
+.slider .num::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
-/* deslizador: carril hueco que se rellena de amarillo y un mando rojo cuadrado */
-input[type='range'] {
-  grid-column: 1 / -1;
+.slider input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
+  grid-column: 1 / -1;
   width: 100%;
   height: 28px;
   margin: 0;
   padding: 0;
   border: 0;
-  background: none;
+  background: transparent;
   cursor: pointer;
-  --fill: 0%;
+  --thumb: 14px;
+  /* --p (0..1) lo pone panel.ts; el relleno llega hasta el centro del mando */
+  --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0));
 }
-input[type='range']::-webkit-slider-runnable-track {
-  height: 12px;
+.slider input[type='range']::-webkit-slider-runnable-track {
+  box-sizing: border-box;
+  height: 14px;
   border: var(--bw) solid var(--line);
-  /* corte seco, no degradado: la parte recorrida va en amarillo */
   background: linear-gradient(to right, var(--second) var(--fill), var(--bg) var(--fill));
 }
-input[type='range']::-moz-range-track {
-  height: 6px;
+.slider input[type='range']::-moz-range-track {
+  box-sizing: border-box;
+  height: 14px;
   border: var(--bw) solid var(--line);
-  background: var(--bg);
+  background: linear-gradient(to right, var(--second) var(--fill), var(--bg) var(--fill));
 }
-input[type='range']::-moz-range-progress {
-  height: 6px;
-  background: var(--second);
-}
-input[type='range']::-webkit-slider-thumb {
+.slider input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 24px;
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: 26px;
   margin-top: -9px;
-  border: var(--bw) solid var(--line);
+  border: 0;
   border-radius: 0;
-  background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shade);
+  background: var(--ink);
 }
-input[type='range']::-moz-range-thumb {
-  width: 8px;
-  height: 18px;
-  border: var(--bw) solid var(--line);
+.slider input[type='range']::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: 26px;
+  border: 0;
   border-radius: 0;
+  background: var(--ink);
+}
+.slider input[type='range']:hover::-webkit-slider-thumb,
+.slider input[type='range']:active::-webkit-slider-thumb {
   background: var(--accent);
-  box-shadow: 2px 2px 0 var(--shade);
 }
-input[type='range']:active::-webkit-slider-thumb {
-  box-shadow: none;
+.slider input[type='range']:hover::-moz-range-thumb,
+.slider input[type='range']:active::-moz-range-thumb {
+  background: var(--accent);
 }
-input[type='range']:active::-moz-range-thumb {
-  box-shadow: none;
-}
-input[type='range']:focus-visible {
-  outline-offset: 0;
+@media (pointer: coarse) {
+  .slider input[type='range'] {
+    height: 36px;
+  }
+  .slider .num {
+    min-height: 36px;
+  }
 }
 
-/* interruptor: palanca cuadrada que salta de lado */
+/* intensidad de una capa, colgando de su interruptor */
+.slider.sub {
+  margin: -6px 0 0 6px;
+  padding-left: 14px;
+  border-left: var(--bw) solid var(--line);
+}
+.slider.sub > label {
+  color: var(--muted);
+}
+
+/* interruptor: palanca cuadrada que salta de lado; toda la fila es la etiqueta */
 .switch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
   min-height: 36px;
   cursor: pointer;
 }
@@ -413,62 +443,265 @@ input.switch:checked::before {
   background: var(--on-second);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 2px 3px 0 0;
+/* herramientas del pincel: chips con su tecla y la muestra de color del mapa */
+.tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
-.actions .btn {
-  flex: 1 1 auto;
+.chip.tool {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip.tool:last-child {
+  grid-column: 1 / -1;
+}
+.chip.tool kbd {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font-size: inherit;
+  opacity: 0.7;
 }
 
-/* ayuda de ratón y teclado */
+/* muestra de color del mapa: hace de leyenda */
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line);
+}
+.chip[aria-pressed='true'] .swatch {
+  border-color: var(--bg);
+}
+
+/* teclas */
 .keys {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px 12px;
+  align-items: baseline;
   margin: 0;
-  align-items: center;
-  font-size: 0.92rem;
-  line-height: 1.25;
+  font-size: 0.86rem;
 }
 .keys dt {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
 }
 .keys dd {
   margin: 0;
+  color: var(--muted);
+}
+kbd {
+  display: inline-block;
+  font-family: var(--f-util);
+  font-weight: 500;
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  padding: 1px 5px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  box-shadow: 2px 2px 0 var(--shade);
 }
 
-@media (max-width: 620px) {
-  .screen {
-    aspect-ratio: 1 / 1;
+/* --- la simulación va enmarcada como una pantalla, con una línea de estado debajo --- */
+.screen {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 16px 21px 21px 16px;
+  margin-right: max(21px, env(safe-area-inset-right, 0px));
+  border: var(--bw) solid var(--line);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+  overflow: hidden;
+}
+.screen canvas {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  touch-action: none;
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
+
+/* dos filas fijas en escritorio, una en el móvil (ver hud.ts): su altura no cambia con los datos */
+.status {
+  flex: none;
+  padding: 5px 10px;
+  border-top: var(--bw) solid var(--line);
+  background: var(--surface);
+  font-family: var(--f-util);
+  font-weight: 500;
+  font-size: var(--util);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.status .st-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* solo en el móvil: la barra de mandos y la sección de aspecto del panel */
+.deck,
+.m-only {
+  display: none;
+}
+
+/* pantallas bajas (el móvil en horizontal): la línea de estado, en una fila */
+@media (max-height: 500px) {
+  .status .st-more {
+    display: none;
   }
 }
 
-/* escritorio: todo cabe en la ventana; la pantalla crece y el panel se desplaza por dentro */
-@media (min-width: 900px) and (min-height: 560px) {
-  body {
+/* Móvil: la pantalla manda.
+   - Cabecera en una fila: solo la flecha de vuelta (el texto sigue para lectores de pantalla),
+     el título y el idioma. La etiqueta se oculta y el botón de tema pasa al panel (Aspecto).
+   - Bajo la pantalla, una barra con los tres mandos más usados.
+   - El panel empieza plegado (index.html) y al abrirse sube como una hoja por encima de la parte
+     baja del lienzo, sin encogerlo: el mundo no se recoloca. */
+@media (max-width: 720px) {
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding-top: max(8px, env(safe-area-inset-top, 0px));
+    padding-bottom: 8px;
+  }
+  .topbar .back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    margin-left: -10px;
+    text-decoration: none;
+  }
+  .topbar .back-arrow {
+    font-size: 1.1rem;
+  }
+  .topbar .back-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
     overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
+  .topbar h1 {
+    min-width: 0;
+    margin-right: auto;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar .tag,
+  .topbar .theme-btn {
+    display: none;
+  }
+
   .app {
-    height: 100%;
-    padding-bottom: 0;
-  }
-  .stage {
-    flex: 1;
-    min-height: 0;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    grid-template-rows: minmax(0, 1fr);
-    padding-bottom: 23px;
+    flex-direction: column;
   }
   .screen {
-    aspect-ratio: auto;
-    flex: 1;
+    order: 1;
+    margin: 10px 17px 12px 12px;
   }
-  .panel {
+  .status .st-more {
+    display: none;
+  }
+
+  .deck {
+    order: 2;
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 max(17px, env(safe-area-inset-right, 0px)) 17px max(12px, env(safe-area-inset-left, 0px));
+  }
+  .deck .btn {
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  @media (max-width: 360px) {
+    .deck .btn {
+      font-size: 0.74em;
+      letter-spacing: -0.02em;
+    }
+  }
+
+  #panel,
+  #panel[open] {
+    order: 3;
+    position: relative;
+    flex: none;
+    width: 100%;
+    overflow: visible;
+    border-right: 0;
+    border-top: var(--bw) solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #panel[open] > summary {
+    border-bottom: 0;
+  }
+  #panel[open] > #controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    z-index: 5;
+    max-height: 58dvh;
     overflow-y: auto;
+    background: var(--surface);
+    border-top: var(--bw) solid var(--line);
+    border-bottom: var(--bw) solid var(--line);
+    box-shadow: 0 -5px 0 var(--shade);
+    scrollbar-color: var(--line) var(--surface);
+  }
+  #controls {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* lo que ya está en la barra de mandos no se repite en el panel */
+  #panel .desk {
+    display: none;
+  }
+  #panel .m-wide {
+    grid-column: 1 / -1;
+  }
+  .m-only {
+    display: flex;
   }
 }
